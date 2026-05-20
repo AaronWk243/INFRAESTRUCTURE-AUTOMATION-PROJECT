@@ -1,0 +1,62 @@
+# =========================
+# Logs
+# =========================
+*.log
+
+
+# =========================
+# Temporary / runtime files
+# =========================
+*.tmp
+*.swp
+*.swo
+*~
+*.bak
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Linux network / system configs (MUY IMPORTANTE en tu caso)
+# =========================
+/etc/netplan/*.yaml
+/etc/netplan/*.yml
+*.netplan
+
+# =========================
+# Secrets / sensitive data
+# =========================
+.env
+*.env
+secrets/
+*.key
+*.pem
+*.crt
+
+# =========================
+# Bash / script artifacts
+# =========================
+*.out
+*.pid
+
+# =========================
+# Editors / IDEs
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Terraform / Ansible (Just in case you use them for automation)
+# =========================
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# =========================
+# Backup files (from sed -i, editors, etc.)
+# =========================
+*.bak.*
+*.backup
