@@ -20,7 +20,7 @@
 Thumbs.db
 
 # =========================
-# Linux network / system configs (MUY IMPORTANTE en tu caso)
+# Linux network / system configs
 # =========================
 /etc/netplan/*.yaml
 /etc/netplan/*.yml
@@ -31,6 +31,8 @@ Thumbs.db
 # =========================
 .env
 *.env
+!*.env.example
+
 secrets/
 *.key
 *.pem
