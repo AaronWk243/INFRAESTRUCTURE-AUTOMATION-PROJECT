@@ -16,10 +16,6 @@ check_root() {
         echo -e "${CROSS} Please run as root."
         exit 1
     fi
-    if echo "$path" | grep "/usr/sbin"; then
-        echo -e "${CROSS} Please run the script from a path without spaces."
-        exit 1
-    fi
 }
 
 make_sbin_path_permanent() {
