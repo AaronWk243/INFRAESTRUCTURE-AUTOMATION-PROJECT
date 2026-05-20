@@ -16,6 +16,32 @@ check_root() {
         echo -e "${CROSS} Please run as root."
         exit 1
     fi
+    if echo "$path" | grep "/usr/sbin"; then
+        echo -e "${CROSS} Please run the script from a path without spaces."
+        exit 1
+    fi
+}
+
+make_sbin_path_permanent() {
+    local rc="$HOME/.bashrc"
+    local line='export PATH=$PATH:/usr/sbin:/sbin'
+
+    if echo "$PATH" | grep -q "/usr/sbin"; then
+        echo -e "${TICK} /usr/sbin is already in PATH. Skipping..."
+        return 0
+    else
+        export PATH="$PATH:/usr/sbin:/sbin"
+        echo -e "${TICK} /usr/sbin added to PATH for current session."
+    fi
+
+    if ! grep -Fq "$line" "$rc" 2>/dev/null; then
+        echo "" >> "$rc"
+        echo "# Fix: add system sbin paths (auto-added)" >> "$rc"
+        echo "$line" >> "$rc"
+        echo -e "${TICK} /usr/sbin added to PATH permanently in $rc."
+    else
+        echo -e "${TICK} /usr/sbin is already in $rc. Skipping..."
+    fi
 }
 
 check_external_conectivity() {
@@ -115,6 +141,7 @@ grub_optimization() {
 # PROGRAM EXECUTION
 set -eo pipefail
 check_root
+make_sbin_path_permanent
 check_external_conectivity
 update_system
 prerequisites_install
