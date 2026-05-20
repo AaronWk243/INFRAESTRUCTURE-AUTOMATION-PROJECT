@@ -66,34 +66,26 @@ disable_network_manager() {
 
 interface_configuration(){
     if [ -f "/etc/netplan/01_netcfg.yaml" ]; then
-        echo -e "${TICK} 01_netcfg.yaml exists."
+        read -p '01_netcfg.yaml exists. Do you want to overwrite it? (y/n): ' OVERWRITE_NETCFG
+        if [[ "$OVERWRITE_NETCFG" == "n" || "$OVERWRITE_NETCFG" == "N" ]]; then
+            echo -e "${TICK} Keeping existing netplan configuration."
+            return 0
+        elif [[ "$OVERWRITE_NETCFG" == "y" || "$OVERWRITE_NETCFG" == "Y" ]]; then
+            echo -e "${RECICLE} Overwriting netplan configuration..."
+            rm -f /etc/netplan/01_netcfg.yaml
+            cp 01_netcfg.yaml.template /etc/netplan/01_netcfg.yaml
+        else
+            echo -e "${CROSS} Invalid input. Please enter 'y' or 'n'."
+            exit 1
+        fi
     else
         cp 01_netcfg.yaml.template /etc/netplan/01_netcfg.yaml
         echo -e "${TICK} 01_netcfg.yaml created from template."
     fi
 
-    if ip a | grep "vlan10" > /dev/null 2>&1 && ip a | grep "vlan20" > /dev/null 2>&1; then
-
-        #OVERWRITE CONFIGURATION
-        echo -e "${WARNING} VLAN interfaces 10 and 20 already exist."
-        read -p 'Do you want to overwrite network configuration? (y/n): ' OVERWRITE_NETWORK
-        if [[ "$OVERWRITE_NETWORK" == "n" || "$OVERWRITE_NETWORK" == "N" ]]; then
-            echo -e "${TICK} Keeping existing network configuration."
-            return 0
-        elif [[ "$OVERWRITE_NETWORK" == "y" || "$OVERWRITE_NETWORK" == "Y" ]]; then
-            echo -e "${RECICLE} Overwriting network configuration..."
-            rm -f /etc/netplan/01_netcfg.yaml
-            cp 01_netcfg_yaml.template /etc/netplan/01_netcfg.yaml
-
-        else
-            echo -e "${CROSS} Invalid input. Please enter 'y' or 'n'."
-            exit 1
-        fi
-    fi
-
     # Set permissions for netplan configuration file
     chown root:root /etc/netplan/01_netcfg.yaml
-    chmod 600 /etc/netplan/01_netcfg.yaml
+    chmod 640 /etc/netplan/01_netcfg.yaml
 
     # Select interface for VLAN configuration
     interfaces=($(ls /sys/class/net | grep -Ev '^(lo|docker.*)$'))
@@ -112,12 +104,12 @@ interface_configuration(){
     sed -i "s|VLAN20_PRIMARY_SERVER_IP_WITH_MASK|$VLAN20_PRIMARY_SERVER_IP_WITH_MASK|g" /etc/netplan/01_netcfg.yaml
     sed -i "s|VLAN20_GATEWAY|$VLAN20_GATEWAY|g" /etc/netplan/01_netcfg.yaml
     sed -i "s|VLAN20_PRIMARY_SERVER_IP|$VLAN20_PRIMARY_SERVER_IP|g" /etc/netplan/01_netcfg.yaml
-    #if netplan apply; then
-    #    echo -e "${TICK} Network configuration applied successfully."
-    #else
-    #    echo -e "${CROSS} Failed to apply network configuration."
-    #    exit 1
-    #fi
+    if netplan apply; then
+        echo -e "${TICK} Network configuration applied successfully."
+    else
+        echo -e "${CROSS} Failed to apply network configuration."
+        exit 1
+    fi
 
 }
 
