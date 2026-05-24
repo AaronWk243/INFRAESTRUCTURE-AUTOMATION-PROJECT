@@ -75,11 +75,9 @@ check_netplan_exists() {
         elif [[ "$DELETE_NETPLAN" == "n" || "$DELETE_NETPLAN" == "N" ]]; then
             echo -e "${TICK} Keeping existing netplan configuration."
             exit 0
-        else
-            echo -e "${CROSS} Invalid input. Please enter 'y' or 'n'."
-    else
-        echo -e "${CROSS} Netplan configuration file does not exist. Please run the network configuration script first."
-        exit 1
+        else  
+            echo -e "${CROSS} Invalid input. Please enter Y/N n."
+        fi
     fi
 }
 
@@ -103,7 +101,15 @@ configuration(){
     sed -i "s|VLAN20_GATEWAY|$VLAN20_GATEWAY|g" 01_netcfg.yaml.workingtemplate
     sed -i "s|VLAN20_PRIMARY_SERVER_IP|$VLAN20_PRIMARY_SERVER_IP|g" 01_netcfg.yaml.workingtemplate
 
-    cp 01_netcfg.yaml.workingtemplate /etc/netplan/01_netcfg.yaml
+    if cp 01_netcfg.yaml.workingtemplate /etc/netplan/01_netcfg.yaml; then
+        echo -e "${TICK} 01_netcfg.yaml created from template."
+    else 
+        echo -e "${CROSS} Creating netplan configuration file failed"
+    fi
+
+    rm 01_netcfg.yaml.workingtemplate
+    chown root:root /etc/netplan/01_netcfg.yaml
+    chmod 600 /etc/netplan/01_netcfg.yaml
 
     if netplan apply; then
         echo -e "${TICK} Network configuration applied successfully."
@@ -112,9 +118,6 @@ configuration(){
         exit 1
     fi
 
-    chown root:root /etc/netplan/01_netcfg.yaml
-    chmod 600 /etc/netplan/01_netcfg.yaml
-    echo -e "${TICK} 01_netcfg.yaml created from template."
 }
 
 
