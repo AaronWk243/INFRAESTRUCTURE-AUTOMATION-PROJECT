@@ -66,6 +66,7 @@ kea_config_generate(){
         chmod +x ./network_config.sh
         ./network_config.sh
         mv kea/config/kea-dhcp4.conf.prenetworktemplate /opt/stack/kea/config/kea-dhcp4.conf
+        rm kea/config/kea-dhcp4.conf.prenetworktemplate
 }
 
 

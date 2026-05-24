@@ -10,7 +10,7 @@ CROSS="${RED}✗${NC}"
 RECICLE="${YELLOW}⟳${NC}"
 WARNING="${YELLOW}⚠${NC}"
 
-#  Network configuration functions
+# Network configuration functions
 check_root() {
     if [ "$EUID" -ne 0 ]; then
         echo -e "${CROSS} Please run as root."
@@ -64,30 +64,28 @@ disable_network_manager() {
     fi
 }
 
-interface_configuration(){
+check_netplan_exists() {
     if [ -f "/etc/netplan/01_netcfg.yaml" ]; then
-        read -p '01_netcfg.yaml exists. Do you want to overwrite it? (y/n): ' OVERWRITE_NETCFG
-        if [[ "$OVERWRITE_NETCFG" == "n" || "$OVERWRITE_NETCFG" == "N" ]]; then
-            echo -e "${TICK} Keeping existing netplan configuration."
-            return 0
-        elif [[ "$OVERWRITE_NETCFG" == "y" || "$OVERWRITE_NETCFG" == "Y" ]]; then
-            echo -e "${RECICLE} Overwriting netplan configuration..."
+        echo -e "${TICK} Netplan configuration file already exists."
+        read -p 'Do you want to delete it and make a new one? (y/n): ' DELETE_NETPLAN
+        if [[ "$DELETE_NETPLAN" == "y" || "$DELETE_NETPLAN" == "Y" ]]; then
             rm -f /etc/netplan/01_netcfg.yaml
-            cp 01_netcfg.yaml.template /etc/netplan/01_netcfg.yaml
+            echo -e "${TICK} Netplan configuration deleted succesfully."
+
+        elif [[ "$DELETE_NETPLAN" == "n" || "$DELETE_NETPLAN" == "N" ]]; then
+            echo -e "${TICK} Keeping existing netplan configuration."
+            exit 0
         else
             echo -e "${CROSS} Invalid input. Please enter 'y' or 'n'."
-            exit 1
-        fi
     else
-        cp 01_netcfg.yaml.template /etc/netplan/01_netcfg.yaml
-        echo -e "${TICK} 01_netcfg.yaml created from template."
+        echo -e "${CROSS} Netplan configuration file does not exist. Please run the network configuration script first."
+        exit 1
     fi
+}
 
-    # Set permissions for netplan configuration file
-    chown root:root /etc/netplan/01_netcfg.yaml
-    chmod 600 /etc/netplan/01_netcfg.yaml
+configuration(){
+    cp 01_netcfg.yaml.template 01_netcfg.yaml.workingtemplate
 
-    # Select interface for VLAN configuration
     interfaces=($(ls /sys/class/net | grep -Ev '^(lo|docker.*)$'))
     echo -e "Select one interface to install VLAN configuration:"
     select ifazXselected in "${interfaces[@]}"; do
@@ -99,11 +97,14 @@ interface_configuration(){
     done
 
     # Replace placeholders in netplan configuration file with actual values from .env file
-    sed -i "s|ifazXchange|$ifazXselected|g" /etc/netplan/01_netcfg.yaml
-    sed -i "s|VLAN10_PRIMARY_SERVER_IP_WITH_MASK|$VLAN10_PRIMARY_SERVER_IP_WITH_MASK|g" /etc/netplan/01_netcfg.yaml
-    sed -i "s|VLAN20_PRIMARY_SERVER_IP_WITH_MASK|$VLAN20_PRIMARY_SERVER_IP_WITH_MASK|g" /etc/netplan/01_netcfg.yaml
-    sed -i "s|VLAN20_GATEWAY|$VLAN20_GATEWAY|g" /etc/netplan/01_netcfg.yaml
-    sed -i "s|VLAN20_PRIMARY_SERVER_IP|$VLAN20_PRIMARY_SERVER_IP|g" /etc/netplan/01_netcfg.yaml
+    sed -i "s|ifazXchange|$ifazXselected|g" 01_netcfg.yaml.workingtemplate
+    sed -i "s|VLAN10_PRIMARY_SERVER_IP_WITH_MASK|$VLAN10_PRIMARY_SERVER_IP_WITH_MASK|g" 01_netcfg.yaml.workingtemplate
+    sed -i "s|VLAN20_PRIMARY_SERVER_IP_WITH_MASK|$VLAN20_PRIMARY_SERVER_IP_WITH_MASK|g" 01_netcfg.yaml.workingtemplate
+    sed -i "s|VLAN20_GATEWAY|$VLAN20_GATEWAY|g" 01_netcfg.yaml.workingtemplate
+    sed -i "s|VLAN20_PRIMARY_SERVER_IP|$VLAN20_PRIMARY_SERVER_IP|g" 01_netcfg.yaml.workingtemplate
+
+    cp 01_netcfg.yaml.workingtemplate /etc/netplan/01_netcfg.yaml
+
     if netplan apply; then
         echo -e "${TICK} Network configuration applied successfully."
     else
@@ -111,6 +112,9 @@ interface_configuration(){
         exit 1
     fi
 
+    chown root:root /etc/netplan/01_netcfg.yaml
+    chmod 600 /etc/netplan/01_netcfg.yaml
+    echo -e "${TICK} 01_netcfg.yaml created from template."
 }
 
 
@@ -119,4 +123,5 @@ source ../.env
 check_root
 disable_ipv6
 disable_network_manager
-interface_configuration
+check_netplan_exists
+configuration
