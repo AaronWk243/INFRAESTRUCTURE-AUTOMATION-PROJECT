@@ -4,6 +4,7 @@ network:
   ethernets:
     ifazXchange:
       dhcp4: false
+
   vlans:
     vlan10:
       id: 10

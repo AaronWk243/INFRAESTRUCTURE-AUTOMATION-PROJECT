@@ -85,7 +85,7 @@ interface_configuration(){
 
     # Set permissions for netplan configuration file
     chown root:root /etc/netplan/01_netcfg.yaml
-    chmod 640 /etc/netplan/01_netcfg.yaml
+    chmod 600 /etc/netplan/01_netcfg.yaml
 
     # Select interface for VLAN configuration
     interfaces=($(ls /sys/class/net | grep -Ev '^(lo|docker.*)$'))

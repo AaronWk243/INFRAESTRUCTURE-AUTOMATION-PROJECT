@@ -1,0 +1,60 @@
+{
+  "Dhcp4": {
+    "interfaces-config": {
+      "interfaces": [ "vlan10", "vlan20" ],
+      "dhcp-socket-type": "raw"
+    },
+  
+    "control-socket": {
+        "socket-type": "unix",
+        "socket-name": "/tmp/kea4-ctrl-socket"
+    },
+  
+    "lease-database": {
+      "type": "postgresql",
+      "host": "127.0.0.1",
+      "port": 5432,
+      "name": "postgreschangedb",
+      "user": "postgreschangeuser",
+      "password": "postgreschangepassword",
+      "lfc-interval": 3600
+    },
+  
+    "authoritative": true,
+  
+    "subnet4": [
+      {
+        "id": 1,
+        "subnet": "10.0.80.0/22",
+        "pools": [ { "pool": "10.0.80.20 - 10.0.83.254" } ],
+        "option-data": [
+          {
+            "name": "routers",
+            "data": "10.0.80.1"
+          }
+        ],
+        "valid-lifetime": 1209600,
+        "renew-timer": 604800,
+        "rebind-timer": 1058400
+      },
+      {
+        "id": 2,
+        "subnet": "192.168.80.0/23",
+        "pools": [ { "pool": "192.168.80.35 - 192.168.81.254" } ],
+        "option-data": [
+          {
+            "name": "routers",
+            "data": "192.168.80.1"
+          },
+          {
+            "name": "domain-name-servers",
+            "data": "192.168.80.10"
+          }
+        ],
+        "valid-lifetime": 14400,
+        "renew-timer": 7200,
+        "rebind-timer": 12600
+      }
+    ]
+  }
+}

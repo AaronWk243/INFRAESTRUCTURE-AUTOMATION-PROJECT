@@ -1,0 +1,78 @@
+services:
+  dhcp-postgres:
+    image: postgres:16-alpine
+    container_name: dhcp-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+
+  dhcp-kea:
+    build:
+      context: ./kea/files
+      dockerfile: Dockerfile
+    container_name: dhcp-kea
+    network_mode: host
+    restart: unless-stopped
+    depends_on:
+      - dhcp-postgres
+    volumes:
+      - ./kea/config/kea-dhcp4.conf:/etc/kea/kea-dhcp4.conf
+    env_file:
+      - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+
+  dns-pihole:
+    container_name: dns-pihole
+    image: pihole/pihole:latest
+    ports:
+      - "192.168.0.10:53:53/tcp"
+      - "192.168.0.10:53:53/udp"
+      # - "513:513/tcp" #In production use these bindings to the internal network vlan10 for security reasons.
+      # - "513:513/udp"
+      - "192.168.1.20:80:80/tcp"
+      - "192.168.1.20:443:443/tcp"
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE}
+      FTLCONF_webserver_api_password: ${PIHOLE_PASSWORD}
+      FTLCONF_dns_listeningMode: 'ALL'
+      FTLCONF_dns_upstreams: '1.1.1.1;9.9.9.9;8.8.8.8'
+      FTLCONF_history_maxAge: 30 #Max time in days that the dashboard will keep the query history, this is used to save RAM and improve performance.
+      FTLCONF_history_keepRecent: 12 #Max time in hours that the dashboard will keep in RAM the recent queries, this is used to improve performance.
+
+    volumes:
+      # For persisting Pi-hole's databases and common configuration file
+      - './pihole/etc:/etc/pihole'
+      - './pihole/logs:/var/log/pihole'
+      # Uncomment the below if you have custom dnsmasq config files that you want to persist. Not needed for most starting fresh with Pi-hole v6. If you're upgrading from v5 you and have used this directory before, you should keep it enabled for the first v6 container start to allow for a complete migration. It can be removed afterwards. Needs environment variable FTLCONF_misc_etc_dnsmasq_d: 'true'
+      #- './etc-dnsmasq.d:/etc/dnsmasq.d'
+    env_file:
+      - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    cap_add:
+      # See https://docs.pi-hole.net/docker/configuration/#note-on-capabilities
+      - SYS_TIME
+      # Optional, if Pi-hole should get some more processing time
+      - SYS_NICE
