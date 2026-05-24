@@ -12,19 +12,23 @@ CROSS="${RED}✗${NC}"
 RECICLE="${YELLOW}⟳${NC}"
 WARNING="${YELLOW}⚠${NC}"
 
+KEA_TEMPLATE='kea/config/kea-dhcp4.conf.prenetworktemplate'
+
+
 # Stack configuration functions
 change_network_config() {
     echo -e "${RECICLE} Adapting network configuration for stack..."
 
-    sed -i "s/VLAN10_CDIR/$VLAN10_CDIR/g" kea/config/kea-dhcp4.conf.prenetworktemplate
-    sed -i "s/VLAN10_CONCESION_RANGE/$VLAN10_CONCESION_RANGE/g" kea/config/kea-dhcp4.conf.prenetworktemplate
-    sed -i "s/VLAN10_PRIMARY_SERVER_IP/$VLAN10_PRIMARY_SERVER_IP/g" kea/config/kea-dhcp4.conf.prenetworktemplate
-    sed -i "s/VLAN20_CDIR/$VLAN20_CDIR/g" kea/config/kea-dhcp4.conf.prenetworktemplate
-    sed -i "s/VLAN20_CONCESION_RANGE/$VLAN20_CONCESION_RANGE/g" kea/config/kea-dhcp4.conf.prenetworktemplate
-    sed -i "s/VLAN20_PRIMARY_SERVER_IP_WITH_MASK/$VLAN20_PRIMARY_SERVER_IP_WITH_MASK/g" kea/config/kea-dhcp4.conf.prenetworktemplate
-
-    mv kea/config/kea-dhcp4.conf.prenetworktemplate /opt/stack/kea/config/kea-dhcp4.conf
-    echo -e "${TICK} Network configuration adapted successfully."
+    sed -i \
+    -e "s|VLAN10_CDIR|$VLAN10_CDIR|g" \
+    -e "s|VLAN10_CONCESION_RANGE|$VLAN10_CONCESION_RANGE|g" \
+    -e "s|VLAN10_PRIMARY_SERVER_IP|$VLAN10_PRIMARY_SERVER_IP|g" \
+    -e "s|VLAN10_GATEWAY|$VLAN10_GATEWAY|g" \
+    -e "s|VLAN20_CDIR|$VLAN20_CDIR|g" \
+    -e "s|VLAN20_CONCESION_RANGE|$VLAN20_CONCESION_RANGE|g" \
+    -e "s|VLAN20_PRIMARY_SERVER_IP|$VLAN20_PRIMARY_SERVER_IP|g" \
+    -e "s|VLAN20_GATEWAY|$VLAN20_GATEWAY|g" \
+    "$KEA_TEMPLATE"
 }
 
 # Main execution

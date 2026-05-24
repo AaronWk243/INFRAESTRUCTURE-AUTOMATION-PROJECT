@@ -12,6 +12,9 @@ CROSS="${RED}✗${NC}"
 RECICLE="${YELLOW}⟳${NC}"
 WARNING="${YELLOW}⚠${NC}"
 
+KEA_PRETEMPLATE='kea/config/kea-dhcp4.conf.prenetworktemplate'
+KEA_TEMPLATE='kea/config/kea-dhcp4.conf.template'
+
 # Stack configuration functions
 check_root() {
     if [ "$EUID" -ne 0 ]; then
@@ -48,25 +51,24 @@ rand_generate(){
 
 env_generate(){
 
-    sed -e "s/postgreschangeuser/user$rand_generated1/g" \
-        -e "s/postgreschangepassword/$password_generated_kea_postgresql/g" \
-        -e "s/postgreschangedb/db_$rand_generated2/g" \
-        -e "s/piholechangepassword/$password_generated_pihole/g" \
-        -e "s|timezone_change|$timezone_generated|g" \
-         .env.template > /opt/stack/.env
+    sed -e "s|postgreschangeuser|user$rand_generated1|g" \
+    -e "s|postgreschangepassword|$password_generated_kea_postgresql|g" \
+    -e "s|postgreschangedb|db_$rand_generated2|g" \
+    -e "s|piholechangepassword|$password_generated_pihole|g" \
+    -e "s|timezone_change|$timezone_generated|g" \
+    .env.template > /opt/stack/.env
 }
 
 kea_config_generate(){
-    if [ -f ../.]
     sed -e "s/\"name\": \"postgreschangedb\"/\"name\": \"db_$rand_generated2\"/g" \
         -e "s/\"user\": \"postgreschangeuser\"/\"user\": \"user$rand_generated1\"/g" \
         -e "s/\"password\": \"postgreschangepassword\"/\"password\": \"$password_generated_kea_postgresql\"/g" \
-        kea/config/kea-dhcp4.conf.template > kea/config/kea-dhcp4.conf.prenetworktemplate
+        $KEA_TEMPLATE > kea/config/kea-dhcp4.conf.prenetworktemplate
 
         chmod +x ./network_config.sh
         ./network_config.sh
-        mv kea/config/kea-dhcp4.conf.prenetworktemplate /opt/stack/kea/config/kea-dhcp4.conf
-        rm kea/config/kea-dhcp4.conf.prenetworktemplate
+        mv $KEA_PRETEMPLATE /opt/stack/kea/config/kea-dhcp4.conf
+    
 }
 
 
@@ -84,6 +86,6 @@ timezone_generated=$(timedatectl show --property=Timezone --value)
 env_generate
 kea_config_generate
 
-docker compose up -d dhcp-postgres
-docker compose up -d dhcp-kea
-docker compose up -d dns-pihole
+#docker compose up -d dhcp-postgres
+#docker compose up -d dhcp-kea
+#docker compose up -d dns-pihole
