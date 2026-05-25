@@ -14,8 +14,8 @@
       "type": "postgresql",
       "host": "127.0.0.1",
       "port": 5432,
-      "name": "postgreschangedb",
-      "user": "postgreschangeuser",
+      "name": "db_postgreschangedb",
+      "user": "user_postgreschangeuser",
       "password": "postgreschangepassword",
       "lfc-interval": 3600
     },
@@ -26,7 +26,7 @@
       {
         "id": 1,
         "subnet": "VLAN10_CDIR",
-        "pools": [ { "pool": "VLAN10_CONCESION_RANGE" } ],
+        "pools": [ { "pool": "VLAN10_POOL_WE" } ],
         "option-data": [
           {
             "name": "routers",
@@ -40,15 +40,15 @@
       {
         "id": 2,
         "subnet": "VLAN20_CDIR",
-        "pools": [ { "pool": "VLAN20_CONCESION_RANGE" } ],
+        "pools": [ { "pool": "VLAN20_POOL_WE" } ],
         "option-data": [
           {
             "name": "routers",
-            "data": "192.168.80.1"
+            "data": "VLAN20_GATEWAY"
           },
           {
             "name": "domain-name-servers",
-            "data": "VLAN20_PRIMARY_SERVER_IP"
+            "data": "VLAN20_DNS_SERVER"
           }
         ],
         "valid-lifetime": 14400,

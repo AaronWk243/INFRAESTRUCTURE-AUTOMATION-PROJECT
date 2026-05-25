@@ -16,5 +16,5 @@ RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-# Used by the entrypoint to initialize the database if needed, then start the server.
+# El CMD ahora solo contiene el comando final, que será pasado al "$@" del entrypoint
 CMD ["kea-dhcp4", "-c", "/etc/kea/kea-dhcp4.conf"]

@@ -12,10 +12,11 @@ CROSS="${RED}✗${NC}"
 RECICLE="${YELLOW}⟳${NC}"
 WARNING="${YELLOW}⚠${NC}"
 
-KEA_PRETEMPLATE='kea/config/kea-dhcp4.conf.prenetworktemplate'
-KEA_TEMPLATE='kea/config/kea-dhcp4.conf.template'
+StackRoute=/opt/stack001
 
-# Stack configuration functions
+
+#REQUIRED FUNCTIONS
+
 check_root() {
     if [ "$EUID" -ne 0 ]; then
         echo -e "${CROSS} Please run as root."
@@ -23,25 +24,16 @@ check_root() {
     fi
 }
 
-create_folders() {
-    echo -e "${RECICLE} Creating necessary folders..."
-    mkdir -p /opt/stack/kea/config
-    mkdir -p /opt/stack/kea/files
-    cp ./kea/files/* /opt/stack/kea/files/
+generateStackStructure(){
+    mkdir -p /opt/stack001 /opt/stack001/kea/config /opt/stack001/kea/files /opt/stack001/pihole/etc /opt/stack001/pihole/logs /opt/stack001/postgresql/data
+    
+    cp docker-compose.yaml /opt/stack001/docker-compose.yaml
+    cp .env.template /opt/stack001/.env.template
+    cp kea/files/Dockerfile /opt/stack001/kea/files/Dockerfile
+    cp kea/files/entrypoint.sh /opt/stack001/kea/files/entrypoint.sh
 
-    mkdir -p /opt/stack/pihole/etc
-    mkdir -p /opt/stack/pihole/logs
-
-    mkdir -p /opt/stack/postgres/data
-
-    cp docker-compose.yaml /opt/stack/docker-compose.yaml
-
-    chown -R root:root /opt/stack
-    chmod -R 755 /opt/stack
 }
 
-
-# Generate random passwords and environment variables
 password_generate(){
     openssl rand -hex 32
 }
@@ -49,43 +41,70 @@ rand_generate(){
     openssl rand -hex 2
 }
 
-env_generate(){
+#PROGRAM FUNCTIONS
 
-    sed -e "s|postgreschangeuser|user$rand_generated1|g" \
-    -e "s|postgreschangepassword|$password_generated_kea_postgresql|g" \
-    -e "s|postgreschangedb|db_$rand_generated2|g" \
-    -e "s|piholechangepassword|$password_generated_pihole|g" \
-    -e "s|timezone_change|$timezone_generated|g" \
-    .env.template > /opt/stack/.env
+envGenerate(){
+    sed -e "s|postgreschangeuser|$randGenerated1|g" \
+        -e "s|postgreschangepassword|$passwordGenerated1|g" \
+        -e "s|postgreschangedb|$randGenerated2|g" \
+        -e "s|piholechangepassword|$passwordGenerated2|g" \
+        -e "s|timezonechange|$timezoneGenerated|g" \
+        -e "s|vlan10cdirchange|$VLAN10_CDIR|g" \
+        -e "s|vlan10poolchange|$VLAN10_POOL_WE|g" \
+        -e "s|vlan10gateway|$VLAN10_GATEWAY|g" \
+        -e "s|vlan20cdirchange|$VLAN20_CDIR|g" \
+        -e "s|vlan20poolchange|$VLAN20_POOL_WE|g" \
+        -e "s|vlan20gateway|$VLAN20_GATEWAY|g" \
+        -e "s|vlan20dnschange|$VLAN20_DNS_SERVER|g" \
+        .env.template > $StackRoute/.env
+}
+keaGenerate(){
+    sed -e "s|postgreschangedb|$randGenerated2|g" \
+         -e "s|postgreschangeuser|$randGenerated1|g" \
+        -e "s|postgreschangepassword|$passwordGenerated1|g" \
+        -e "s|VLAN10_CDIR|$VLAN10_CDIR|g" \
+        -e "s|VLAN10_POOL_WE|$VLAN10_POOL_WE|g" \
+        -e "s|VLAN10_GATEWAY|$VLAN10_GATEWAY|g" \
+        -e "s|VLAN20_CDIR|$VLAN20_CDIR|g" \
+        -e "s|VLAN20_POOL_WE|$VLAN20_POOL_WE|g" \
+        -e "s|VLAN20_GATEWAY|$VLAN20_GATEWAY|g" \
+        -e "s|VLAN20_DNS_SERVER|$VLAN20_DNS_SERVER|g" \
+    ./kea/config/kea-dhcp4.conf.template > $StackRoute/kea/config/kea-dhcp4.conf
+
 }
 
-kea_config_generate(){
-    sed -e "s/\"name\": \"postgreschangedb\"/\"name\": \"db_$rand_generated2\"/g" \
-        -e "s/\"user\": \"postgreschangeuser\"/\"user\": \"user$rand_generated1\"/g" \
-        -e "s/\"password\": \"postgreschangepassword\"/\"password\": \"$password_generated_kea_postgresql\"/g" \
-        $KEA_TEMPLATE > kea/config/kea-dhcp4.conf.prenetworktemplate
-
-        chmod +x ./network_config.sh
-        ./network_config.sh
-        mv $KEA_PRETEMPLATE /opt/stack/kea/config/kea-dhcp4.conf
-    
+networkValues(){
+    read -p "Introduce VLAN10_CDIR. Ej: 10.0.0.0/23: " VLAN10_CDIR
+    read -p "Introduce VLAN10_POOL_WE. Ej: 10.0.0.35 - 10.0.1.254: " VLAN10_POOL_WE
+    read -p "Introduce VLAN10_GATEWAY. Ej: 10.0.0.1: " VLAN10_GATEWAY
+    read -p "Introduce VLAN20_CDIR. Ej: 192.168.0.0/24: " VLAN20_CDIR
+    read -p "Introduce VLAN20_POOL_WE. Ej: 192.168.0.50 - 192.168.0.200: " VLAN20_POOL_WE
+    read -p "Introduce VLAN20_GATEWAY. Ej: 192.168.0.1: " VLAN20_GATEWAY
+    read -p "Introduce VLAN20_DNS_SERVER. Ej: 10.0.0.10: " VLAN20_DNS_SERVER
 }
 
 
 
 
-# Main execution
+### MAIN PROGRAM ###
+# Pre-checks
 check_root
-create_folders
-password_generated_kea_postgresql=$(password_generate)
-password_generated_pihole=$(password_generate)
-rand_generated1=$(rand_generate)
-rand_generated2=$(rand_generate)
-timezone_generated=$(timedatectl show --property=Timezone --value)
+source ../.env
+generateStackStructure
 
-env_generate
-kea_config_generate
 
-#docker compose up -d dhcp-postgres
-#docker compose up -d dhcp-kea
-#docker compose up -d dns-pihole
+# Generating variables and configuration files
+passwordGenerated1=$(password_generate)
+passwordGenerated2=$(password_generate)
+randGenerated1=$(rand_generate)
+randGenerated2=$(rand_generate)
+timezoneGenerated=$(timedatectl show --property=Timezone --value)
+networkValues
+
+
+envGenerate
+keaGenerate
+
+
+# Stack execution
+docker compose -f "$StackRoute/docker-compose.yaml" up -d
