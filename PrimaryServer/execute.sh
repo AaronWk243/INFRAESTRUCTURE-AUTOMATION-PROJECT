@@ -46,6 +46,6 @@ networkValues
 
 envGenerate
 
-#./001_Dependencies/config.sh
-#./002_NetworkConfig/config.sh
+./001_Dependencies/config.sh
+./002_NetworkConfig/config.sh
 ./003_Stack/config.sh
