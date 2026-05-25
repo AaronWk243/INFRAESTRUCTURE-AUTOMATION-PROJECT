@@ -10,14 +10,14 @@ network:
       id: 10
       link: ifazXchange
       addresses:
-        - VLAN10_PRIMARY_SERVER_IP_WITH_MASK
+        - VLAN10_SERVER_IP_WM
     vlan20:
       id: 20
       link: ifazXchange
       addresses:
-        - VLAN20_PRIMARY_SERVER_IP_WITH_MASK
+        - VLAN20_SERVER_IP_WM
       routes:
         - to: default
           via: VLAN20_GATEWAY 
       nameservers:
-        addresses: [VLAN20_PRIMARY_SERVER_IP]
+        addresses: [VLAN20_SERVER_IP_NM]

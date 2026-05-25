@@ -12,6 +12,8 @@ CROSS="${RED}✗${NC}"
 RECICLE="${YELLOW}⟳${NC}"
 WARNING="${YELLOW}⚠${NC}"
 
+
+CodeRoute='./003_Stack'
 StackRoute=/opt/stack001
 
 
@@ -25,12 +27,13 @@ check_root() {
 }
 
 generateStackStructure(){
-    mkdir -p /opt/stack001 /opt/stack001/kea/config /opt/stack001/kea/files /opt/stack001/pihole/etc /opt/stack001/pihole/logs /opt/stack001/postgresql/data
+    mkdir -p $StackRoute $StackRoute/kea/config $StackRoute/kea/files $StackRoute/pihole/etc \
+    $StackRoute/pihole/logs $StackRoute/postgresql/data
     
-    cp docker-compose.yaml /opt/stack001/docker-compose.yaml
-    cp .env.template /opt/stack001/.env.template
-    cp kea/files/Dockerfile /opt/stack001/kea/files/Dockerfile
-    cp kea/files/entrypoint.sh /opt/stack001/kea/files/entrypoint.sh
+    cp $CodeRoute/docker-compose.yaml $StackRoute/docker-compose.yaml
+    cp $CodeRoute/.env.template $StackRoute/.env.template
+    cp $CodeRoute/kea/files/Dockerfile $StackRoute/kea/files/Dockerfile
+    cp $CodeRoute/kea/files/entrypoint.sh $StackRoute/kea/files/entrypoint.sh
 
 }
 
@@ -56,11 +59,11 @@ envGenerate(){
         -e "s|vlan20poolchange|$VLAN20_POOL_WE|g" \
         -e "s|vlan20gateway|$VLAN20_GATEWAY|g" \
         -e "s|vlan20dnschange|$VLAN20_DNS_SERVER|g" \
-        .env.template > $StackRoute/.env
+        $CodeRoute/.env.template > $StackRoute/.env
 }
 keaGenerate(){
     sed -e "s|postgreschangedb|$randGenerated2|g" \
-         -e "s|postgreschangeuser|$randGenerated1|g" \
+        -e "s|postgreschangeuser|$randGenerated1|g" \
         -e "s|postgreschangepassword|$passwordGenerated1|g" \
         -e "s|VLAN10_CDIR|$VLAN10_CDIR|g" \
         -e "s|VLAN10_POOL_WE|$VLAN10_POOL_WE|g" \
@@ -69,42 +72,38 @@ keaGenerate(){
         -e "s|VLAN20_POOL_WE|$VLAN20_POOL_WE|g" \
         -e "s|VLAN20_GATEWAY|$VLAN20_GATEWAY|g" \
         -e "s|VLAN20_DNS_SERVER|$VLAN20_DNS_SERVER|g" \
-    ./kea/config/kea-dhcp4.conf.template > $StackRoute/kea/config/kea-dhcp4.conf
+    $CodeRoute/kea/config/kea-dhcp4.conf.template > $StackRoute/kea/config/kea-dhcp4.conf
 
 }
 
-networkValues(){
-    read -p "Introduce VLAN10_CDIR. Ej: 10.0.0.0/23: " VLAN10_CDIR
-    read -p "Introduce VLAN10_POOL_WE. Ej: 10.0.0.35 - 10.0.1.254: " VLAN10_POOL_WE
-    read -p "Introduce VLAN10_GATEWAY. Ej: 10.0.0.1: " VLAN10_GATEWAY
-    read -p "Introduce VLAN20_CDIR. Ej: 192.168.0.0/24: " VLAN20_CDIR
-    read -p "Introduce VLAN20_POOL_WE. Ej: 192.168.0.50 - 192.168.0.200: " VLAN20_POOL_WE
-    read -p "Introduce VLAN20_GATEWAY. Ej: 192.168.0.1: " VLAN20_GATEWAY
-    read -p "Introduce VLAN20_DNS_SERVER. Ej: 10.0.0.10: " VLAN20_DNS_SERVER
+
+securityConfig(){
+    chown $ADMIN_USER_NAME:$ADMIN_USER_NAME $StackRoute -R
+    chmod 700 $StackRoute -R
+
 }
-
-
 
 
 ### MAIN PROGRAM ###
 # Pre-checks
 check_root
-source ../.env
+source .env
 generateStackStructure
 
 
-# Generating variables and configuration files
+# Generating variables
 passwordGenerated1=$(password_generate)
 passwordGenerated2=$(password_generate)
 randGenerated1=$(rand_generate)
 randGenerated2=$(rand_generate)
 timezoneGenerated=$(timedatectl show --property=Timezone --value)
-networkValues
 
-
+# GENERATE .env and kea-dhcp4.conf files with generated variables and values from .env file
 envGenerate
+source $StackRoute/.env
 keaGenerate
 
+securityConfig
 
 # Stack execution
-docker compose -f "$StackRoute/docker-compose.yaml" up -d
+docker compose -f "$StackRoute/docker-compose.yaml" up -d 

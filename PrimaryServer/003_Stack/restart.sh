@@ -1,10 +1,5 @@
 #!/bin/env bash
-if [ "$(docker compose ps -q)" ]; then
-    docker compose down -v
-fi
-docker system prune -a -f --volumes
+docker stop $(docker ps -aq)
+docker rm -f $(docker ps -aq)
 
-rm -rf postgresql/data/*
-rm -rf kea/config/kea-dhcp4.conf
-rm -rf /pihole/etc/*
-rm -rf /pihole/logs/*
+rm -rf /opt/stack001

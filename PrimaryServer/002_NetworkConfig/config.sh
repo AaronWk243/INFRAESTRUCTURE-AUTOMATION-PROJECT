@@ -10,6 +10,8 @@ CROSS="${RED}✗${NC}"
 RECICLE="${YELLOW}⟳${NC}"
 WARNING="${YELLOW}⚠${NC}"
 
+ProgramRoute="./002_NetworkConfig"
+
 # Network configuration functions
 check_root() {
     if [ "$EUID" -ne 0 ]; then
@@ -82,7 +84,7 @@ check_netplan_exists() {
 }
 
 configuration(){
-    cp 01_netcfg.yaml.template 01_netcfg.yaml.workingtemplate
+    cp "$ProgramRoute/01_netcfg.yaml.template" "$ProgramRoute/01_netcfg.yaml.workingtemplate"
 
     interfaces=($(ls /sys/class/net | grep -Ev '^(lo|docker.*)$'))
     echo -e "Select one interface to install VLAN configuration:"
@@ -95,20 +97,22 @@ configuration(){
     done
 
     # Replace placeholders in netplan configuration file with actual values from .env file
-    sed -i "s|ifazXchange|$ifazXselected|g" 01_netcfg.yaml.workingtemplate
-    sed -i "s|VLAN10_PRIMARY_SERVER_IP_WITH_MASK|$VLAN10_PRIMARY_SERVER_IP_WITH_MASK|g" 01_netcfg.yaml.workingtemplate
-    sed -i "s|VLAN20_PRIMARY_SERVER_IP_WITH_MASK|$VLAN20_PRIMARY_SERVER_IP_WITH_MASK|g" 01_netcfg.yaml.workingtemplate
-    sed -i "s|VLAN20_GATEWAY|$VLAN20_GATEWAY|g" 01_netcfg.yaml.workingtemplate
-    sed -i "s|VLAN20_PRIMARY_SERVER_IP|$VLAN20_PRIMARY_SERVER_IP|g" 01_netcfg.yaml.workingtemplate
+    sed -e "s|ifazXchange|$ifazXselected|g" \
+        -e "s|VLAN10_SERVER_IP_WM|$VLAN10_SERVER_IP_WM|g" \
+        -e "s|VLAN20_SERVER_IP_WM|$VLAN20_SERVER_IP_WM|g" \
+        -e "s|VLAN20_GATEWAY|$VLAN20_GATEWAY|g" \
+        -e "s|VLAN20_SERVER_IP_NM|$VLAN20_SERVER_IP_NM|g" \
+        "$ProgramRoute/01_netcfg.yaml.template" > "$ProgramRoute/01_netcfg.yaml.workingtemplate"
+      
 
-    if cp 01_netcfg.yaml.workingtemplate /etc/netplan/01_netcfg.yaml; then
+    if cp "$ProgramRoute/01_netcfg.yaml.workingtemplate" "/etc/netplan/01_netcfg.yaml"; then
         echo -e "${TICK} 01_netcfg.yaml created from template."
     else 
         echo -e "${CROSS} Creating netplan configuration file failed"
     fi
 
-    rm 01_netcfg.yaml.workingtemplate
-    chown root:root /etc/netplan/01_netcfg.yaml
+    rm "$ProgramRoute/01_netcfg.yaml.workingtemplate"
+    chown root:root "/etc/netplan/01_netcfg.yaml"
     chmod 600 /etc/netplan/01_netcfg.yaml
 
     if netplan apply; then
@@ -122,9 +126,10 @@ configuration(){
 
 
 # PROGRAM EXECUTION
-source ../.env
+source .env
 check_root
 disable_ipv6
 disable_network_manager
 check_netplan_exists
 configuration
+ip route del default via 192.168.0.1 dev vlan20 proto static 
