@@ -66,6 +66,11 @@ disable_network_manager() {
     fi
 }
 
+enable_systemd() {
+    systemctl enable systemd-networkd
+    systemctl start systemd-networkd
+}
+
 check_netplan_exists() {
     if [ -f "/etc/netplan/01_netcfg.yaml" ]; then
         echo -e "${TICK} Netplan configuration file already exists."
@@ -130,6 +135,7 @@ source .env
 check_root
 disable_ipv6
 disable_network_manager
+enable_systemd
 check_netplan_exists
 configuration
-ip route del default via 192.168.0.1 dev vlan20 proto static 
+#ip route del default via 192.168.0.1 dev vlan20 proto static #Used only for testing on VMs
