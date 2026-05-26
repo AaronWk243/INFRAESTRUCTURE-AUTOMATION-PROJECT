@@ -10,15 +10,13 @@ services:
     restart: unless-stopped
     volumes:
       - ./postgresql/data:/var/lib/postgresql/data
-    env_file:
-      - .env
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U test -d testdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -35,8 +33,6 @@ services:
         condition: service_healthy
     volumes:
       - ./kea/config/kea-dhcp4.conf:/etc/kea/kea-dhcp4.conf
-    env_file:
-      - .env
     logging:
       driver: "json-file"
       options:
