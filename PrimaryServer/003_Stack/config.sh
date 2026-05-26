@@ -31,7 +31,6 @@ generateStackStructure(){
     $StackRoute/pihole/logs $StackRoute/postgresql/data
     
     cp $CodeRoute/docker-compose.yaml $StackRoute/docker-compose.yaml
-    cp $CodeRoute/.env.template $StackRoute/.env.template
     cp $CodeRoute/kea/files/Dockerfile $StackRoute/kea/files/Dockerfile
     cp $CodeRoute/kea/files/entrypoint.sh $StackRoute/kea/files/entrypoint.sh
 
