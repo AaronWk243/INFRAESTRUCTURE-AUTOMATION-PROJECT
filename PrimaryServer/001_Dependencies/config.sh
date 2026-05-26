@@ -59,7 +59,7 @@ update_system() {
 }
 
 prerequisites_install() {
-    if apt install ca-certificates curl gnupg lsb-release netplan.io net-tools iputils-ping -y > /dev/null 2>&1; then
+    if apt install ca-certificates curl gnupg lsb-release netplan.io net-tools iputils-ping procps -y > /dev/null 2>&1; then
         echo -e "${TICK} Prerequisites installed successfully."
     else
         echo -e "${CROSS} Failed to install prerequisites."
