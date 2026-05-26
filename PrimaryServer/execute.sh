@@ -20,7 +20,9 @@ checkRoot() {
 
 envGenerate(){
     sed -e "s|change_admin|$ADMIN_USER_NAME|g" \
+        \
         -e "s|change_netbird_token|$NETBIRD_TOKEN|g" \
+        -e "s|change_netbird_url|$NETBIRD_URL|g"
         \
         -e "s|vlan10cdirchange|$VLAN10_CDIR|g" \
         -e "s|vlan10poolchange|$VLAN10_POOL_WE|g" \
@@ -39,6 +41,7 @@ envGenerate(){
 getParameters(){
     read -p "Introduce Admin user name: " ADMIN_USER_NAME
     read -p "Introduce Netbird token: " NETBIRD_TOKEN
+    read -p "Introduce Netbird URL: " NETBIRD_URL
 }
 
 networkValues(){
