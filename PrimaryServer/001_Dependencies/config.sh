@@ -141,7 +141,6 @@ make_sbin_path_permanent
 check_external_conectivity
 update_system
 prerequisites_install
-sleep 2
 docker_install
 netbird_install
 grub_optimization
