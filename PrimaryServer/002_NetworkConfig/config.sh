@@ -28,30 +28,31 @@ disable_ipv6() {
             chown root:root /etc/sysctl.d/99-sysctl.conf
             chmod 640 /etc/sysctl.d/99-sysctl.conf
             return 0
+
         elif [[ "$OVERWRITE_IPV6" == "y" || "$OVERWRITE_IPV6" == "Y" ]]; then
             echo -e "${RECICLE} Overwriting IPv6 configuration..."
             rm -f /etc/sysctl.d/99-sysctl.conf
-            touch /etc/sysctl.d/99-sysctl.conf
-            chown root:root /etc/sysctl.d/99-sysctl.conf
-            chmod 640 /etc/sysctl.d/99-sysctl.conf
-
-            # Disable IPv6
-            echo "net.ipv6.conf.all.disable_ipv6 = 1" > /etc/sysctl.d/99-sysctl.conf
-            echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.d/99-sysctl.conf
-            echo "net.ipv6.conf.lo.disable_ipv6 = 1" >> /etc/sysctl.d/99-sysctl.conf
-
-            # Apply sysctl settings
-            if sysctl -p /etc/sysctl.d/99-sysctl.conf > /dev/null 2>&1; then
-                echo -e "${TICK} IPv6 disabled successfully."
-            else
-                echo -e "${CROSS} Failed to apply IPv6 configuration."
-                exit 1
-            fi
-            echo -e "${TICK} IPv6 disabled successfully."
         else
             echo -e "${CROSS} Invalid input. Please enter 'y' or 'n'."
             exit 1
         fi
+    fi
+
+    echo -e "${RECICLE} Creating IPv6 configuration..."
+
+    touch /etc/sysctl.d/99-sysctl.conf
+    chown root:root /etc/sysctl.d/99-sysctl.conf
+    chmod 640 /etc/sysctl.d/99-sysctl.conf
+
+    echo "net.ipv6.conf.all.disable_ipv6 = 1" > /etc/sysctl.d/99-sysctl.conf
+    echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.d/99-sysctl.conf
+    echo "net.ipv6.conf.lo.disable_ipv6 = 1" >> /etc/sysctl.d/99-sysctl.conf
+
+    if sysctl -p /etc/sysctl.d/99-sysctl.conf > /dev/null 2>&1; then
+        echo -e "${TICK} IPv6 disabled successfully."
+    else
+        echo -e "${CROSS} Failed to apply IPv6 configuration."
+        exit 1
     fi
 }
 
@@ -89,46 +90,46 @@ check_netplan_exists() {
 }
 
 configuration(){
-    cp "$ProgramRoute/01_netcfg.yaml.template" "$ProgramRoute/01_netcfg.yaml.workingtemplate"
-
-    interfaces=($(ls /sys/class/net | grep -Ev '^(lo|docker.*)$'))
-    echo -e "Select one interface to install VLAN configuration:"
-    select ifazXselected in "${interfaces[@]}"; do
-        if [[ -n "$ifazXselected" ]]; then
-            break
-        else
-            echo -e "${CROSS} Invalid selection. Please try again."
-        fi
+    interfaces=()
+    for i in /sys/class/net/*; do
+        name=$(basename "$i")
+        [[ "$name" == lo || "$name" == docker* ]] && continue
+        interfaces+=("$name")
     done
 
-    # Replace placeholders in netplan configuration file with actual values from .env file
+    echo -e "Select one interface to install VLAN configuration:"
+    select ifazXselected in "${interfaces[@]}"; do
+        [[ -n "$ifazXselected" ]] && break
+        echo -e "${CROSS} Invalid selection. Please try again."
+    done
+
     sed -e "s|ifazXchange|$ifazXselected|g" \
         -e "s|VLAN10_SERVER_IP_WM|$VLAN10_SERVER_IP_WM|g" \
         -e "s|VLAN20_SERVER_IP_WM|$VLAN20_SERVER_IP_WM|g" \
         -e "s|VLAN20_GATEWAY|$VLAN20_GATEWAY|g" \
         -e "s|VLAN20_SERVER_IP_NM|$VLAN20_SERVER_IP_NM|g" \
         "$ProgramRoute/01_netcfg.yaml.template" > "$ProgramRoute/01_netcfg.yaml.workingtemplate"
-      
 
     if cp "$ProgramRoute/01_netcfg.yaml.workingtemplate" "/etc/netplan/01_netcfg.yaml"; then
+        rm "$ProgramRoute/01_netcfg.yaml.workingtemplate"
+
         echo -e "${TICK} 01_netcfg.yaml created from template."
-    else 
+    else
         echo -e "${CROSS} Creating netplan configuration file failed"
+        exit 1
     fi
 
-    rm "$ProgramRoute/01_netcfg.yaml.workingtemplate"
     chown root:root "/etc/netplan/01_netcfg.yaml"
-    chmod 600 /etc/netplan/01_netcfg.yaml
-
-    sleep 2
+    chmod 600 "/etc/netplan/01_netcfg.yaml"
     
+    sleep 1
+
     if /usr/sbin/netplan apply; then
         echo -e "${TICK} Network configuration applied successfully."
     else
         echo -e "${CROSS} Failed to apply network configuration."
         exit 1
     fi
-
 }
 
 
