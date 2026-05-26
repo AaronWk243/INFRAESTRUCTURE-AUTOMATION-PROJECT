@@ -68,8 +68,22 @@ disable_network_manager() {
 }
 
 enable_systemd() {
-    systemctl enable systemd-networkd
+    systemctl enable --now systemd-networkd
     systemctl start systemd-networkd
+    
+    if systemctl is-active --quiet systemd-networkd; then
+        echo -e "${TICK} systemd-networkd is running."
+    else
+        echo -e "${CROSS} systemd-networkd is NOT running."
+        exit 1
+    fi
+    
+    if systemctl is-enabled --quiet systemd-networkd; then
+        echo -e "${TICK} systemd-networkd is enabled at boot."
+    else
+        echo -e "${CROSS} systemd-networkd is NOT enabled."
+        exit 1
+    fi
 }
 
 check_netplan_exists() {
