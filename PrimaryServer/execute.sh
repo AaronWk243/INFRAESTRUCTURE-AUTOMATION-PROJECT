@@ -68,4 +68,7 @@ envGenerate
 
 ./001_Dependencies/config.sh
 ./002_NetworkConfig/config.sh
+
+sleep 5
+
 ./003_Stack/config.sh
