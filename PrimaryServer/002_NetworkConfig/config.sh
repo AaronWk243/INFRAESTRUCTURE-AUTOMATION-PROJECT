@@ -73,20 +73,31 @@ enable_systemd() {
 }
 
 check_netplan_exists() {
-    if [ -f "/etc/netplan/01_netcfg.yaml" ]; then
-        echo -e "${TICK} Netplan configuration file already exists."
-        read -p 'Do you want to delete it and make a new one? (y/n): ' DELETE_NETPLAN
-        if [[ "$DELETE_NETPLAN" == "y" || "$DELETE_NETPLAN" == "Y" ]]; then
-            rm -f /etc/netplan/01_netcfg.yaml
-            echo -e "${TICK} Netplan configuration deleted succesfully."
+    while true; do
+        if [ -f "/etc/netplan/01_netcfg.yaml" ]; then
+            echo -e "${TICK} Netplan configuration file already exists."
+            read -p 'Do you want to delete it and make a new one? (y/n): ' DELETE_NETPLAN
 
-        elif [[ "$DELETE_NETPLAN" == "n" || "$DELETE_NETPLAN" == "N" ]]; then
-            echo -e "${TICK} Keeping existing netplan configuration."
-            exit 0
-        else  
-            echo -e "${CROSS} Invalid input. Please enter Y/N n."
+            case "$DELETE_NETPLAN" in
+                y|Y)
+                    rm -f /etc/netplan/01_netcfg.yaml
+                    echo -e "${TICK} Netplan configuration deleted successfully."
+                    return 0
+                    ;;
+
+                n|N)
+                    echo -e "${TICK} Keeping existing netplan configuration."
+                    return 1
+                    ;;
+
+                *)
+                    echo -e "${CROSS} Invalid input. Please enter Y or N."
+                    ;;
+            esac
+        else
+            return 0
         fi
-    fi
+    done
 }
 
 configuration(){
@@ -124,7 +135,7 @@ configuration(){
     
     sleep 1
 
-    if /usr/sbin/netplan apply; then
+    if /usr/sbin/netplan --debug apply; then
         echo -e "${TICK} Network configuration applied successfully."
     else
         echo -e "${CROSS} Failed to apply network configuration."
