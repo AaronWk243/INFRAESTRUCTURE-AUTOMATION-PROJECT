@@ -120,7 +120,7 @@ configuration(){
     chown root:root "/etc/netplan/01_netcfg.yaml"
     chmod 600 /etc/netplan/01_netcfg.yaml
 
-    if if /usr/sbin/netplan apply; then
+    if /usr/sbin/netplan apply; then
         echo -e "${TICK} Network configuration applied successfully."
     else
         echo -e "${CROSS} Failed to apply network configuration."
