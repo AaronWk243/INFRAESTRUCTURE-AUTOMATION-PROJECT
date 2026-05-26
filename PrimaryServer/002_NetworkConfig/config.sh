@@ -22,7 +22,7 @@ check_root() {
 
 netbirdConnect(){
     domainFQDN=$(hostname -f)
-    netbird up --setup-key "${NETBIRD_TOKEN}" --hostname "${domainFQDN}"
+    netbird up --setup-key "${NETBIRD_TOKEN}" --hostname "${domainFQDN}" --management-url https://netbird.valentinarosse.com
 }
 
 disable_ipv6() {
