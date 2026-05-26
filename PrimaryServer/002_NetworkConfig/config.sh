@@ -120,6 +120,8 @@ configuration(){
     chown root:root "/etc/netplan/01_netcfg.yaml"
     chmod 600 /etc/netplan/01_netcfg.yaml
 
+    sleep 2
+    
     if /usr/sbin/netplan apply; then
         echo -e "${TICK} Network configuration applied successfully."
     else
