@@ -48,7 +48,7 @@ disable_ipv6() {
     echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.d/99-sysctl.conf
     echo "net.ipv6.conf.lo.disable_ipv6 = 1" >> /etc/sysctl.d/99-sysctl.conf
 
-    if sysctl -p /etc/sysctl.d/99-sysctl.conf > /dev/null 2>&1; then
+    if /usr/sbin/sysctl --system > /dev/null 2>&1; then
         echo -e "${TICK} IPv6 disabled successfully."
     else
         echo -e "${CROSS} Failed to apply IPv6 configuration."
