@@ -22,7 +22,7 @@ envGenerate(){
     sed -e "s|change_admin|$ADMIN_USER_NAME|g" \
         \
         -e "s|change_netbird_token|$NETBIRD_TOKEN|g" \
-        -e "s|change_netbird_url|$NETBIRD_URL|g"
+        -e "s|change_netbird_url|$NETBIRD_URL|g" \
         \
         -e "s|vlan10cdirchange|$VLAN10_CDIR|g" \
         -e "s|vlan10poolchange|$VLAN10_POOL_WE|g" \
