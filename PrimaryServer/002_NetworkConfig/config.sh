@@ -20,6 +20,11 @@ check_root() {
     fi
 }
 
+netbirdConnect(){
+    domainFQDN=$(hostname -f)
+    netbird up --setup-key "${NETBIRD_TOKEN}" --hostname "${domainFQDN}"
+}
+
 disable_ipv6() {
     if [ -f "/etc/sysctl.d/99-sysctl.conf" ]; then
         read -p 'IPv6 configuration already exists. Do you want to overwrite it? (y/n): ' OVERWRITE_IPV6
@@ -164,6 +169,7 @@ check_root
 disable_ipv6
 disable_network_manager
 enable_systemd
+netbirdConnect
 check_netplan_exists
 configuration
 #ip route del default via 192.168.0.1 dev vlan20 proto static #Used only for testing on VMs
