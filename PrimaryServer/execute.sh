@@ -1,3 +1,23 @@
+#!/bin/bash
+#VARIABLE DECORATION
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+TICK="${GREEN}✓${NC}"
+CROSS="${RED}✗${NC}"
+RECICLE="${YELLOW}⟳${NC}"
+
+
+# FUNCIONS
+checkRoot() {
+    if [ "$EUID" -ne 0 ]; then
+        echo -e "${CROSS} Please run as root."
+        exit 1
+    fi
+}
+
 envGenerate(){
     sed -e "s|change_admin|$ADMIN_USER_NAME|g" \
         -e "s|change_netbird_token|$NETBIRD_TOKEN|g" \
@@ -15,7 +35,6 @@ envGenerate(){
         -e "s|vlan20primaryserveripchange|$VLAN20_SERVER_IP_WITHOUT_MASK|g" \
         .env.template > .env
 }
-
 
 getParameters(){
     read -p "Introduce Admin user name: " ADMIN_USER_NAME
@@ -41,6 +60,7 @@ networkValues(){
 
 
 # EXECUTION
+checkRoot
 getParameters
 networkValues
 
