@@ -69,6 +69,6 @@ envGenerate
 ./001_Dependencies/config.sh
 ./002_NetworkConfig/config.sh
 
-sleep 5
+# sleep 15 "For testing with VM, should delete ip route to vlan20 to have internet conexion"
 
 ./003_Stack/config.sh
