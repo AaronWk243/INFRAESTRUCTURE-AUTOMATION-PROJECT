@@ -30,7 +30,6 @@ generateStackStructure(){
     mkdir -p $StackRoute $StackRoute/kea/config $StackRoute/kea/files $StackRoute/pihole/etc \
     $StackRoute/pihole/logs $StackRoute/postgresql/data
     
-    cp $CodeRoute/docker-compose.yaml $StackRoute/docker-compose.yaml
     cp $CodeRoute/kea/files/Dockerfile $StackRoute/kea/files/Dockerfile
     cp $CodeRoute/kea/files/entrypoint.sh $StackRoute/kea/files/entrypoint.sh
 
@@ -60,6 +59,7 @@ envGenerate(){
         -e "s|vlan20dnschange|$VLAN20_DNS_SERVER|g" \
         $CodeRoute/.env.template > $StackRoute/.env
 }
+
 keaGenerate(){
     sed -e "s|postgreschangedb|$randGenerated2|g" \
         -e "s|postgreschangeuser|$randGenerated1|g" \
@@ -73,6 +73,12 @@ keaGenerate(){
         -e "s|VLAN20_DNS_SERVER|$VLAN20_DNS_SERVER|g" \
     $CodeRoute/kea/config/kea-dhcp4.conf.template > $StackRoute/kea/config/kea-dhcp4.conf
 
+}
+
+dockerComposeGenerate(){
+    sed -e "s|change_vlan20_server_ip|$VLAN20_SERVER_IP_NM|g" \
+        -e "s|change_vlan10_server_ip|$VLAN10_SERVER_IP_NM|g" \
+        $CodeRoute/docker-compose.yaml.template > $StackRoute/docker-compose.yaml
 }
 
 
@@ -101,6 +107,7 @@ timezoneGenerated=$(timedatectl show --property=Timezone --value)
 envGenerate
 source $StackRoute/.env
 keaGenerate
+dockerComposeGenerate
 
 securityConfig
 

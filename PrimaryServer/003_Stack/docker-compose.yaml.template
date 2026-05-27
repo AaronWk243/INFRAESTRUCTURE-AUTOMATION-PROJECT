@@ -47,10 +47,10 @@ services:
     container_name: dns-pihole
     image: pihole/pihole:latest
     ports:
-      - "192.168.0.10:53:53/tcp"
-      - "192.168.0.10:53:53/udp"
-      - "10.0.0.10:15000:80/tcp" # 
-      - "10.0.0.10.130:15001:443/tcp" # 
+      - "change_vlan20_server_ip:53:53/tcp"
+      - "change_vlan20_server_ip:53:53/udp"
+      - "change_vlan10_server_ip:15000:80/tcp" # 
+      - "change_vlan10_server_ip:15001:443/tcp" # 
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE}

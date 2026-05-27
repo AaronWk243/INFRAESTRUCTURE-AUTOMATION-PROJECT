@@ -28,13 +28,14 @@ envGenerate(){
         -e "s|vlan10poolchange|$VLAN10_POOL_WE|g" \
         -e "s|vlan10gateway|$VLAN10_GATEWAY|g" \
         -e "s|vlan10serveripchange|$VLAN10_PRIMARY_SERVER_IP_WITH_MASK|g" \
+        -e "s|vlan10primaryserveripwithoutmaskchange|$VLAN10_SERVER_IP_WITHOUT_MASK|g" \
         \
         -e "s|vlan20cdirchange|$VLAN20_CDIR|g" \
         -e "s|vlan20poolchange|$VLAN20_POOL_WE|g" \
         -e "s|vlan20gateway|$VLAN20_GATEWAY|g" \
         -e "s|vlan20dnschange|$VLAN20_DNS_SERVER|g" \
         -e "s|vlan20serveripchange|$VLAN20_PRIMARY_SERVER_IP_WITH_MASK|g" \
-        -e "s|vlan20primaryserveripchange|$VLAN20_SERVER_IP_WITHOUT_MASK|g" \
+        -e "s|vlan20primaryserveripwithoutmaskchange|$VLAN20_SERVER_IP_WITHOUT_MASK|g" \
         .env.template > .env
 }
 
@@ -49,7 +50,7 @@ networkValues(){
     read -p "Introduce VLAN10_POOL_WE. Ej: x.x.x.x - x.x.x.x: " VLAN10_POOL_WE
     read -p "Introduce VLAN10_GATEWAY. Ej: x.x.x.x: " VLAN10_GATEWAY
     read -p "Introduce VLAN10_SERVER_IP_WITH_MASK. Ej: x.x.x.x/xx: " VLAN10_PRIMARY_SERVER_IP_WITH_MASK
-
+    read -p "Introduce VLAN10_SERVER_IP_WITHOUT_MASK. Ej: x.x.x.x: " VLAN10_SERVER_IP_WITHOUT_MASK
 
     read -p "Introduce VLAN20_CDIR. Ej: x.x.x.x/xx: " VLAN20_CDIR
     read -p "Introduce VLAN20_POOL_WE. Ej: x.x.x.x - x.x.x.x: " VLAN20_POOL_WE
@@ -72,6 +73,6 @@ envGenerate
 ./001_Dependencies/config.sh
 ./002_NetworkConfig/config.sh
 
-# sleep 15 "For testing with VM, should delete ip route to vlan20 to have internet conexion"
+sleep 15
 
 ./003_Stack/config.sh
