@@ -61,7 +61,7 @@ disable_ipv6() {
     fi
 }
 
-disable_network_manager() {
+disableNetworkManager() {
     if systemctl is-active --quiet NetworkManager; then
         echo -e "${RECICLE} Disabling NetworkManager..."
         systemctl stop NetworkManager
@@ -72,7 +72,7 @@ disable_network_manager() {
     fi
 }
 
-enable_systemd() {
+enableSystemd() {
     systemctl enable --now systemd-networkd
     systemctl start systemd-networkd
     
@@ -91,7 +91,7 @@ enable_systemd() {
     fi
 }
 
-check_netplan_exists() {
+checkNetplanExistence() {
     while true; do
         if [ -f "/etc/netplan/01_netcfg.yaml" ]; then
             echo -e "${TICK} Netplan configuration file already exists."
@@ -156,6 +156,7 @@ configuration(){
 
     if /usr/sbin/netplan --debug apply; then
         echo -e "${TICK} Network configuration applied successfully."
+        return 0
     else
         echo -e "${CROSS} Failed to apply network configuration."
         exit 1
@@ -167,9 +168,17 @@ configuration(){
 source .env
 check_root
 disable_ipv6
-disable_network_manager
-enable_systemd
+disableNetworkManager
+enableSystemd
 netbirdConnect
-check_netplan_exists
-configuration
-#ip route del default via 192.168.0.1 dev vlan20 proto static #Used only for testing on VMs
+if checkNetplanExistence; then
+    if configuration ; then
+        echo -e "${TICK} Network configuration completed successfully."
+    else
+        echo -e "${CROSS} Network configuration failed."
+        exit 1
+    fi
+
+else
+    echo -e "${TICK} Skipping netplan configuration."
+fi
