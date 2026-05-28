@@ -1,11 +1,11 @@
 ### INFRAESTRUCTURE-AUTOMATION-PROJECT ###
 
 For this project, we designed and implemented a full-stack automated infrastructure for clients requiring deployment of KEA DHCP, DNS, Frigate, LDAP, and a WordPress basic website server. The solution includes two fully segregated VLANs for employees and security devices (CCTV and IoT), along with a WireGuard-based mesh VPN using NetBird to enable secure remote maintenance and management. 
-# "/PrimaryServer"
+Scripts on --> "/PrimaryServer"
 
 Some automated checkouts and alerts sent to Telegram Bot to detect possible problems with containers, connectivity...
 A script used to deploy some basic automated CISCO security and port switch configurations (Anti DHCP-Spoofing...). 
-# "/SwitchConfig"
+Scripts on --> "/SwitchConfig"
 
 
 # Needs
@@ -34,7 +34,7 @@ A script used to deploy some basic automated CISCO security and port switch conf
     - DHCP Server Connection: YES
     - DNS Server Connection: YES
     - Web Pannels:
-      - Wordpress Website:
+      - Wordpress Website.
   
     - PRUPOSES: Vlan used for employees, Internet access, printers, etc...
 
@@ -62,5 +62,7 @@ A script used to deploy some basic automated CISCO security and port switch conf
 
 
 ### PRODUCTION EXECUTION ###
-
+- Infraestructure configuration (Just in case you dont have switch ports... configurated):
+  1. Enter to "/SwitchConfig/" and execute config.sh.
+  2. This will ask you some questions. Once finalizated, the program will create you a "switch01.cfg" On your "/home/$USER"
   
