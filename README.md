@@ -1,22 +1,41 @@
-# INFRAESTRUCTURE-AUTOMATION-PROJECT
+### INFRAESTRUCTURE-AUTOMATION-PROJECT ###
 
-For this project, we created an full stack automated infraestructure for customers who need to deploy DHCP Server (KEA), DNS Server, Frigate Server, LDAP Server and a Simple Wordpress Server integrated with 2 completly separated VLANs for employees and Security devices (Cameras, IoT...).
+For this project, we designed and implemented a full-stack automated infrastructure for clients requiring deployment of KEA DHCP, DNS, Frigate, LDAP, and a WordPress basic website server. The solution includes two fully segregated VLANs for employees and security devices (CCTV and IoT), along with a WireGuard-based mesh VPN using NetBird to enable secure remote maintenance and management. 
+# "/PrimaryServer"
 
-Infraestructure details:
+Some automated checkouts and alerts sent to Telegram Bot to detect possible problems with containers, connectivity...
+A script used to deploy some basic automated CISCO security and port switch configurations (Anti DHCP-Spoofing...). 
+# "/SwitchConfig"
+
+
+# Needs
+- NetBird:
+  - Self-Hosted:
+    - Domain pointing to your server via Cloudflare P2P...
+    - Auth0 (Not required but recommended)
+    - NetBird connection KEY (Asked when launching the project)
+  - Using NetBird original services:
+    - NetBird connection KEY (Asked when launching the project)
+
+
+# Infraestructure details:
 - VLAN 10:
-    - CDIR: 
-    - Gateway: NO
-    - DHCP Server: 10.0.0.10
-    - DNS Server: NO
+    - Gateway: YES
+    - DHCP Server Connection: YES (Long DHCP lease time. Aprox 2 weeks...)
+    - DNS Server Connection: NO
+    - Web Pannels:
+      - Pi-Hole Admin pannel.
+      - Frigate ADmin pannel.
 
     - PRUPOSES: Vlan used only for cameras, IoT devices... because of security reasons. 
 
 - VLAN 20:
-    - CDIR: 
-    - Gateway: 
-    - DHCP Server: 
-    - DNS Server: 
-
+    - Gateway: YES
+    - DHCP Server Connection: YES
+    - DNS Server Connection: YES
+    - Web Pannels:
+      - Wordpress Website:
+  
     - PRUPOSES: Vlan used for employees, Internet access, printers, etc...
 
 
